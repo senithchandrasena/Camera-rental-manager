@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#172033">
+<meta name="description" content="Three-camera rental calendar and booking manager">
+<link rel="manifest" href="manifest.json">
+<title>Camera Rental Manager</title>
+<style>
+:root{--ink:#172033;--muted:#64748b;--line:#dbe1e8;--bg:#f5f7fa;--card:#fff;--red:#b91c1c;--green:#15803d;--blue:#1d4ed8;--yellow:#a16207}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:15px}.title{font-size:25px;font-weight:800}.sub{color:var(--muted);font-size:13px}.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:9px;padding:10px 13px;cursor:pointer}.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.danger{color:var(--red)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px}.stat b{font-size:21px;display:block}.stat span{font-size:12px;color:var(--muted)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar select,.toolbar button{min-height:42px}.calendarHead{display:flex;justify-content:space-between;align-items:center;margin:10px 0}.month{font-size:19px;font-weight:800}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.dow{text-align:center;color:var(--muted);font-size:11px;font-weight:700;padding:5px}.day{min-height:105px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:left;cursor:pointer}.day:hover{border-color:#94a3b8}.day.today{outline:2px solid var(--ink);outline-offset:-2px}.num{font-weight:800;font-size:12px}.event{font-size:10px;border-radius:5px;padding:4px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.c1{background:#fee2e2;color:#991b1b}.c2{background:#dbeafe;color:#1d4ed8}.c3{background:#dcfce7;color:#166534}.emptyDay{opacity:.35}.panel{margin-top:14px}.panel h2{font-size:16px;margin:0 0 10px}.availability{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cam{border-radius:9px;padding:11px;border:1px solid var(--line)}.free{background:#f0fdf4;color:#166534}.busy{background:#fef2f2;color:#991b1b}.maintenance{background:#fffbeb;color:#92400e}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;font-size:12px;font-weight:700}.field input,.field select,.field textarea{width:100%;margin-top:5px;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff}.full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.booking{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:9px;padding:11px;margin-top:7px;background:#fff}.small{font-size:12px;color:var(--muted)}.hidden{display:none}.tabs{display:flex;gap:7px;margin:14px 0;overflow:auto}.tabs button{white-space:nowrap}.cameraCard{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px}.statusPill{display:inline-block;padding:4px 7px;border-radius:999px;font-size:11px}.active{background:#dcfce7;color:#166534}.out{background:#fef2f2;color:#991b1b}.maint{background:#fffbeb;color:#92400e}.notice{background:#f8fafc;border-radius:8px;padding:10px;font-size:12px;margin-bottom:10px}.search{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px}@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.day{min-height:82px}.event{font-size:9px}.formGrid{grid-template-columns:1fr}.full{grid-column:auto}.availability{grid-template-columns:1fr}.wrap{padding:12px}.title{font-size:21px}}@media(max-width:430px){.day{min-height:68px;padding:4px}.dow{font-size:9px}.event{padding:2px;font-size:8px}.month{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <div><div class="title">📷 Camera Rental Manager</div><div class="sub">3-camera booking & availability system</div></div>
+  <button class="btn primary" id="newBooking">+ New Booking</button>
+</div>
+
+<div class="stats">
+  <div class="stat"><b id="upcoming">0</b><span>Upcoming rentals</span></div>
+  <div class="stat"><b id="freeNow">3</b><span>Cameras free today</span></div>
+  <div class="stat"><b id="monthBookings">0</b><span>Bookings this month</span></div>
+  <div class="stat"><b id="monthRevenue">LKR 0</b><span>Booked value this month</span></div>
+</div>
+
+<div class="tabs">
+  <button class="btn primary" data-tab="calendar">📅 Calendar</button>
+  <button class="btn" data-tab="rentals">📋 Rentals</button>
+  <button class="btn" data-tab="cameras">📷 Cameras</button>
+  <button class="btn" data-tab="customers">👤 Customers</button>
+</div>
+
+<section id="calendarTab">
+  <div class="toolbar">
+    <select id="filter"><option value="all">All cameras</option><option value="1">Camera 1</option><option value="2">Camera 2</option><option value="3">Camera 3</option></select>
+    <button class="btn" id="today">Today</button>
+  </div>
+  <div class="calendarHead"><button class="btn" id="prev">‹</button><div class="month" id="month"></div><button class="btn" id="next">›</button></div>
+  <div class="calendar" id="calendar"></div>
+  <div class="panel" id="dayPanel"><h2>Select a date</h2><div class="small">Click a date to see availability for all three cameras.</div></div>
+</section>
+
+<section id="rentalsTab" class="hidden">
+  <div class="panel">
+    <h2>Rental records</h2>
+    <input class="search" id="rentalSearch" placeholder="Search customer, phone or camera...">
+    <div id="rentalList"></div>
+  </div>
+</section>
+
+<section id="camerasTab" class="hidden">
+  <div class="panel"><h2>Camera inventory</h2><div id="cameraList"></div></div>
+</section>
+
+<section id="customersTab" class="hidden">
+  <div class="panel">
+    <h2>Customers</h2>
+    <input class="search" id="customerSearch" placeholder="Search customers...">
+    <div id="customerList"></div>
+  </div>
+</section>
+
+<section class="panel hidden" id="formPanel">
+<h2 id="formTitle">New Booking</h2>
+<div id="formNotice"></div>
+<form id="bookingForm">
+<div class="formGrid">
+<div class="field"><label>Customer name<input id="name" required></label></div>
+<div class="field"><label>Phone<input id="phone" type="tel"></label></div>
+<div class="field"><label>Camera<select id="camera"><option value="1">Camera 1</option><option value="2">Camera 2</option><option value="3">Camera 3</option></select></label></div>
+<div class="field"><label>Status<select id="status"><option>Confirmed</option><option>Booked</option><option>Pending</option><option>Returned</option><option>Cancelled</option></select></label></div>
+<div class="field"><label>Pickup date<input id="start" type="date" required></label></div>
+<div class="field"><label>Return date<input id="end" type="date" required></label></div>
+<div class="field"><label>Rental amount (LKR)<input id="amount" type="number" min="0" value="1500"></label></div>
+<div class="field"><label>Deposit (LKR)<input id="deposit" type="number" min="0" value="0"></label></div>
+<div class="field full"><label>Notes<textarea id="notes" rows="3"></textarea></label></div>
+</div>
+<div class="actions"><button class="btn primary" type="submit">Save Booking</button><button class="btn" type="button" id="cancelForm">Cancel</button></div>
+</form>
+</section>
+</div>
+
+<script>
+(() => {
+const KEY="cameraRentalManagerV1";
+const defaultState={bookings:[],cameras:[
+{id:1,name:"Camera 1",model:"DJI Osmo Action 5 Pro",status:"Available",notes:""},
+{id:2,name:"Camera 2",model:"",status:"Available",notes:""},
+{id:3,name:"Camera 3",model:"",status:"Available",notes:""}
+]};
+let state=load(), view=new Date(), editingId=null, currentTab="calendar";
+const $=id=>document.getElementById(id);
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));return x&&x.bookings&&x.cameras?x:structuredClone(defaultState)}catch{return structuredClone(defaultState)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function iso(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
+function fmt(s){return new Date(s+"T00:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"})}
+function overlaps(a,b,c,d){return a<=d&&c<=b}
+function bookingOn(cam,date,ignore=null){return state.bookings.find(b=>b.camera==cam&&b.status!=="Cancelled"&&b.status!=="Returned"&&b.id!==ignore&&overlaps(b.start,b.end,date,date))}
+function money(n){return "LKR "+Number(n||0).toLocaleString()}
+function renderStats(){
+ const now=iso(new Date()), ym=now.slice(0,7);
+ $("upcoming").textContent=state.bookings.filter(b=>b.end>=now&&b.status!=="Cancelled"&&b.status!=="Returned").length;
+ $("freeNow").textContent=[1,2,3].filter(c=>!bookingOn(c,now)).length;
+ $("monthBookings").textContent=state.bookings.filter(b=>b.start.slice(0,7)===ym&&b.status!=="Cancelled").length;
+ $("monthRevenue").textContent=money(state.bookings.filter(b=>b.start.slice(0,7)===ym&&b.status!=="Cancelled").reduce((a,b)=>a+Number(b.amount||0),0));
+}
+function renderCalendar(){
+ const y=view.getFullYear(),m=view.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0);
+ $("month").textContent=view.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+ let h=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="dow">${x}</div>`).join("");
+ for(let i=0;i<first.getDay();i++)h+="<div></div>";
+ for(let n=1;n<=last.getDate();n++){
+   const d=new Date(y,m,n),s=iso(d),today=s===iso(new Date());
+   let events="";
+   [1,2,3].filter(c=>$("filter").value==="all"||$("filter").value==c).forEach(c=>{
+     const b=bookingOn(c,s);
+     if(b)events+=`<div class="event c${c}">C${c} · ${esc(b.name)}</div>`;
+   });
+   h+=`<button class="day ${today?"today":""}" data-date="${s}" type="button"><div class="num">${n}</div>${events}</button>`;
+ }
+ $("calendar").innerHTML=h;
+ document.querySelectorAll(".day").forEach(x=>x.addEventListener("click",()=>showDay(x.dataset.date)));
+}
+function showDay(date){
+ let h=`<h2>${fmt(date)}</h2><div class="availability">`;
+ [1,2,3].forEach(c=>{
+   const cam=state.cameras.find(x=>x.id===c), b=bookingOn(c,date);
+   const maintenance=cam.status==="Maintenance";
+   h+=`<div class="cam ${maintenance?"maintenance":b?"busy":"free"}"><strong>Camera ${c}</strong><br>${maintenance?"MAINTENANCE":b?"BOOKED · "+esc(b.name):"FREE"}<br><span class="small">${esc(cam.model||"No model entered")}</span></div>`;
+ });
+ h+=`</div><div class="actions"><button class="btn primary" id="bookDate">+ Book this date</button></div>`;
+ $("dayPanel").innerHTML=h;
+ $("bookDate").onclick=()=>openForm(null,date);
+}
+function openForm(id=null,date=null){
+ editingId=id; $("formPanel").classList.remove("hidden"); $("formTitle").textContent=id?"Edit Booking":"New Booking"; $("formNotice").innerHTML="";
+ if(id){const b=state.bookings.find(x=>x.id===id);["name","phone","camera","status","start","end","amount","deposit","notes"].forEach(k=>$(k).value=b[k]??"")}
+ else{ $("bookingForm").reset(); $("camera").value="1"; $("amount").value="1500"; $("deposit").value="0"; if(date){$("start").value=date;$("end").value=date}}
+ $("formPanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeForm(){editingId=null;$("formPanel").classList.add("hidden")}
+function renderRentals(){
+ const q=$("rentalSearch").value.toLowerCase();
+ let arr=[...state.bookings].filter(b=>(b.name+" "+b.phone+" Camera "+b.camera).toLowerCase().includes(q)).sort((a,b)=>a.start.localeCompare(b.start));
+ if(!arr.length){$("rentalList").innerHTML='<div class="small">No rentals found.</div>';return}
+ $("rentalList").innerHTML=arr.map(b=>`<div class="booking"><div><strong>Camera ${b.camera} · ${esc(b.name)}</strong><div class="small">${fmt(b.start)} → ${fmt(b.end)} · ${money(b.amount)} · Deposit ${money(b.deposit)}</div><div class="small">${esc(b.phone||"No phone")} · ${esc(b.status)}</div></div><div class="actions"><button class="btn" data-edit="${b.id}">Edit</button><button class="btn danger" data-del="${b.id}">Delete</button></div></div>`).join("");
+ document.querySelectorAll("[data-edit]").forEach(x=>x.onclick=()=>openForm(x.dataset.edit));
+ document.querySelectorAll("[data-del]").forEach(x=>x.onclick=()=>{if(confirm("Delete this booking?")){state.bookings=state.bookings.filter(b=>b.id!==x.dataset.del);save();renderAll()}})
+}
+function renderCameras(){
+ $("cameraList").innerHTML=state.cameras.map(c=>`<div class="cameraCard"><strong>${esc(c.name)}</strong><div class="small">${esc(c.model||"Model not entered")}</div><span class="statusPill ${c.status==="Available"?"active":c.status==="Maintenance"?"maint":"out"}">${esc(c.status)}</span><div class="actions"><button class="btn" data-camera="${c.id}">Edit camera</button></div></div>`).join("");
+ document.querySelectorAll("[data-camera]").forEach(x=>x.onclick=()=>editCamera(Number(x.dataset.camera)));
+}
+function editCamera(id){
+ const c=state.cameras.find(x=>x.id===id);
+ const model=prompt("Camera model:",c.model||""); if(model===null)return;
+ const status=prompt("Status: Available, Maintenance, or Out of service",c.status)||c.status;
+ c.model=model;c.status=["Available","Maintenance","Out of service"].includes(status)?status:"Available";save();renderAll();
+}
+function renderCustomers(){
+ const q=$("customerSearch").value.toLowerCase();
+ const map={};
+ state.bookings.forEach(b=>{if((b.name+" "+b.phone).toLowerCase().includes(q)){const key=b.phone||b.name;map[key]??={name:b.name,phone:b.phone,count:0,total:0};map[key].count++;map[key].total+=Number(b.amount||0)}});
+ const arr=Object.values(map);
+ $("customerList").innerHTML=arr.length?arr.map(x=>`<div class="booking"><div><strong>${esc(x.name)}</strong><div class="small">${esc(x.phone||"No phone")}</div></div><div class="small">${x.count} rental(s) · ${money(x.total)}</div></div>`).join(""):'<div class="small">No customers found.</div>';
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function renderAll(){renderStats();renderCalendar();renderRentals();renderCameras();renderCustomers()}
+document.querySelectorAll("[data-tab]").forEach(btn=>btn.onclick=()=>{currentTab=btn.dataset.tab;["calendar","rentals","cameras","customers"].forEach(t=>document.getElementById(t+"Tab").classList.toggle("hidden",t!==currentTab));document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("primary",b.dataset.tab===currentTab))});
+$("prev").onclick=()=>{view.setMonth(view.getMonth()-1);renderCalendar()};
+$("next").onclick=()=>{view.setMonth(view.getMonth()+1);renderCalendar()};
+$("today").onclick=()=>{view=new Date();renderCalendar()};
+$("filter").onchange=renderCalendar;
+$("newBooking").onclick=()=>openForm();
+$("cancelForm").onclick=closeForm;
+$("rentalSearch").oninput=renderRentals;
+$("customerSearch").oninput=renderCustomers;
+$("bookingForm").onsubmit=e=>{
+ e.preventDefault();
+ const b={id:editingId||crypto.randomUUID(),name:$("name").value.trim(),phone:$("phone").value.trim(),camera:Number($("camera").value),status:$("status").value,start:$("start").value,end:$("end").value,amount:Number($("amount").value)||0,deposit:Number($("deposit").value)||0,notes:$("notes").value.trim()};
+ if(!b.name||!b.start||!b.end||b.end<b.start){$("formNotice").innerHTML='<div class="notice">Enter a customer and valid dates.</div>';return}
+ const conflict=state.bookings.find(x=>x.id!==b.id&&x.camera===b.camera&&x.status!=="Cancelled"&&x.status!=="Returned"&&overlaps(x.start,x.end,b.start,b.end));
+ if(conflict){$("formNotice").innerHTML=`<div class="notice" style="color:#991b1b;background:#fef2f2">Camera ${b.camera} is already booked from ${fmt(conflict.start)} to ${fmt(conflict.end)} for ${esc(conflict.name)}.</div>`;return}
+ const i=state.bookings.findIndex(x=>x.id===b.id);if(i>=0)state.bookings[i]=b;else state.bookings.push(b);
+ save();closeForm();view=new Date(b.start+"T00:00:00");renderAll();showDay(b.start);
+};
+renderAll();
+})();
+</script>
+</body>
+</html>
